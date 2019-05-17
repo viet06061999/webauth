@@ -35,20 +35,18 @@
     </header>
     <main class="content mdc-top-app-bar--fixed-adjust">
       <h2>
-        Sign In
+        Login with a random username
       </h2>
-      <form id="form" method="POST" action="/auth/username">
+      <form id="form" method="POST" action="/auth/username" >
         <div class="mdc-text-field">
-          <input type="text" class="mdc-text-field__input" name="username" />
+          <input type="text" id="username" class="mdc-text-field__input" name="username" />
+          <label class="mdc-floating-label" for="username">username</label>
           <div class="mdc-line-ripple"></div>
-          <label class="mdc-floating-label">username</label>
-        </div>
-        <div>
-          For the purpose of demonstration, this app accepts any username.
         </div>
         <input type="submit" class="mdc-button mdc-button--raised" value="Next" />
       </form>
       <script type="module">
+        import { TextField } from 'https://unpkg.com/material-components-web@2.2.0/index.js';
         import { _fetch } from '/client.js';
         const form = document.querySelector('#form');
         form.addEventListener('submit', e => {
