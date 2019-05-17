@@ -38,50 +38,13 @@ export const _fetch = async (path, payload = '') => {
   }
 };
 
-export const registerCredential = async (opts) => {
-  if (!window.PublicKeyCredential) {
-    throw 'WebAuthn not supported on this browser.';
-  }
-  const UVPAA = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-  if (!UVPAA) {
-    throw 'User Verifying Platform Authenticator not available.';
-  }
-
-  const options = await _fetch('/auth/registerRequest', opts);
-
-  options.user.id = base64url.decode(options.user.id);
-  options.challenge = base64url.decode(options.challenge);
-
-  if (options.excludeCredentials) {
-    for (let cred of options.excludeCredentials) {
-      cred.id = base64url.decode(cred.id);
-    }
-  }
-
-  const cred = await navigator.credentials.create({
-    publicKey: options
-  });
-
-  const credential = {};
-  credential.id =     cred.id;
-  credential.type =   cred.type;
-  credential.rawId =  base64url.encode(cred.rawId);
-
-  if (cred.response) {
-    const clientDataJSON =
-      base64url.encode(cred.response.clientDataJSON);
-    const attestationObject =
-      base64url.encode(cred.response.attestationObject);
-    credential.response = {
-      clientDataJSON,
-      attestationObject
-    };
-  }
-  
-  localStorage.setItem(`credId`, credential.id);
-
-  return await _fetch('/auth/registerResponse' , credential);
-};
+// TODO (1): Register a credential using a fingerprint
+// 1. Create `registerCredential() function
+// 2. Feature detection
+// 3. Is User Verifying Platform Authenticator available?
+// 4. Obtain the challenge and other options from server endpoint: `/auth/registerRequest`
+// 5. Create a credential
+// 6. Register the credential to the server endpoint: `/auth/registerResponse`
 
 export const authenticate = async (opts) => {
   if (!window.PublicKeyCredential) {

@@ -43,10 +43,10 @@
         Your registered credentials:
       </h3>
       <section>
-        <div id="list"></div>
-        <button id="register" class="mdc-fab mdc-ripple-upgraded">
-          <i class="mdc-fab__icon material-icons">+</i>
-        </button>
+        <!--
+          TODO(2): Build the UI to register, get and remove credentials
+          1. Build UI placeholder
+        -->
       </section>
       <p>
         <a href="/">Try reauth</a>
@@ -84,6 +84,8 @@
         }
       };
 
+      // TODO(2): Build the UI to register, get and remove credentials
+      // 1. Get a list of credentials and display
       const getCredentials = async () => {
         const res = await _fetch('/auth/getKeys');
         const list = document.querySelector('#list');
