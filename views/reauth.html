@@ -63,14 +63,8 @@
         .catch(e => alert(e));
       });
 
-      authenticate({}).then(user => {
-        if (user) {
-          location.href = '/home';
-        }
-      }).catch(e => {
-        console.error(e);
-        alert('Authentication failed. Use password to sign-in.');
-      });
+      // TODO(4): Enable reauth experience
+      // 1. Apply the biometric authentication when user comes back
     </script>
   </body>
 </html>
