@@ -46,6 +46,14 @@ export const _fetch = async (path, payload = '') => {
 // 5. Create a credential
 // 6. Register the credential to the server endpoint: `/auth/registerResponse`
 
+// TODO(3): Authenticate the user with a fingerprint
+// 1. Create `authetnicate()` function
+// 2. Feature detection and User Verifying Platform Authenticator check
+// 3. Obtain the challenge and other options from server
+// 4. Locally verify the user and get a credential
+// 5. Assert the credential on the server
+// 6. Apply the biometric authentication to the existing user experience
+
 export const authenticate = async (opts) => {
   if (!window.PublicKeyCredential) {
     console.info('WebAuthn not supported on this browser.');
