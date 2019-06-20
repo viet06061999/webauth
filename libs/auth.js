@@ -244,7 +244,8 @@ router.post('/registerRequest', csrfCheck, sessionCheck, async (req, res) => {
       }
     }
     response.pubKeyCredParams = [];
-    const params = [-7, -35, -36, -257, -258, -259, -37, -38, -39, -8];
+    // const params = [-7, -35, -36, -257, -258, -259, -37, -38, -39, -8];
+    const params = [-7, -257];
     for (let param of params) {
       response.pubKeyCredParams.push({type:'public-key', alg: param});
     }
@@ -404,8 +405,17 @@ router.post('/signinRequest', csrfCheck, async (req, res) => {
           });
         }
       }
-      // TODO: What if there is no credentials filled at this point?
-      // TODO: Should we fill?
+      // If credId was specified but empty, means no matching credential was found.
+      // Fill them rather than sending empty in this case.
+      if (credId && response.allowCredentials.length === 0) {
+        for (let cred of user.credentials) {
+          response.allowCredentials.push({
+            id: cred.credId,
+            type: 'public-key',
+            transports: ['internal']
+          });
+        }
+      }
     }
 
     res.json(response);
