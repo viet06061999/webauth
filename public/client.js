@@ -14,69 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License
  */
-// export const _fetch = async (path, payload = '') => {
-//   const headers = {
-//     'X-Requested-With': 'XMLHttpRequest'
-//   };
-//   if (payload && !(payload instanceof FormData)) {
-//     headers['Content-Type'] = 'application/json';
-//     payload = JSON.stringify(payload);
-//   }
-//   const res = await fetch(path, {
-//     method: 'POST',
-//     credentials: 'same-origin',
-//     headers: headers,
-//     body: payload
-//   });
-//   if (res.status === 200) {
-//     // Server authentication succeeded
-//     return res.json();
-//   } else {
-//     // Server authentication failed
-//     const result = await res.json();
-//     throw result.error;
-//   }
-// };
-
-// Until Safari's gesture propagation issue will be resolved
-// We'll have to use `XMLHttpRequest` instead of `fetch`.
 export const _fetch = async (path, payload = '') => {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', path);
-    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-    if (payload && !(payload instanceof FormData)) {
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      payload = JSON.stringify(payload);
-    }
-    xhr.withCredentials = true;
-    xhr.responseType = 'json';
-    xhr.onload = e => {
-      console.log(xhr.response);
-      if (xhr.status === 200) {
-        resolve(xhr.response);
-      } else {
-        reject(xhr.response.error);
-      }
-    }
-    xhr.send(payload);
+  const headers = {
+    'X-Requested-With': 'XMLHttpRequest'
+  };
+  if (payload && !(payload instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+    payload = JSON.stringify(payload);
+  }
+  const res = await fetch(path, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: headers,
+    body: payload
   });
+  if (res.status === 200) {
+    // Server authentication succeeded
+    return res.json();
+  } else {
+    // Server authentication failed
+    const result = await res.json();
+    throw result.error;
+  }
 };
 
 // TODO (1): Register a credential using a fingerprint
 // 1. Create `registerCredential() function
 // 2. Feature detection
-// 3. Is User Verifying Platform Authenticator available?
-// 4. Obtain the challenge and other options from server endpoint: `/auth/registerRequest`
-// 5. Create a credential
-// 6. Register the credential to the server endpoint: `/auth/registerResponse`
+// 3. Obtain the challenge and other options from server endpoint: `/auth/registerRequest`
+// 4. Create a credential
+// 5. Register the credential to the server endpoint: `/auth/registerResponse`
 
 // TODO (2): Build the UI to register, get and remove credentials
 // 3. Remove the credential: `removeCredential()`
 
 // TODO (3): Authenticate the user with a fingerprint
 // 1. Create `authetnicate()` function
-// 2. Feature detection and User Verifying Platform Authenticator check
+// 2. Feature detection
 // 3. Obtain the challenge and other options from server
 // 4. Locally verify the user and get a credential
 // 5. Assert the credential on the server
