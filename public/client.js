@@ -40,17 +40,15 @@ export const _fetch = async (path, payload = '') => {
 
 // TODO (1): Register a credential using a fingerprint
 // 1. Create `registerCredential() function
-// 2. Feature detection
-// 3. Obtain the challenge and other options from server endpoint: `/auth/registerRequest`
-// 4. Create a credential
-// 5. Register the credential to the server endpoint: `/auth/registerResponse`
+// 2. Obtain the challenge and other options from server endpoint: `/auth/registerRequest`
+// 3. Create a credential
+// 4. Register the credential to the server endpoint: `/auth/registerResponse`
 
 // TODO (2): Build the UI to register, get and remove credentials
 // 3. Remove the credential: `removeCredential()`
 
 // TODO (3): Authenticate the user with a fingerprint
 // 1. Create `authetnicate()` function
-// 2. Feature detection
-// 3. Obtain the challenge and other options from server
-// 4. Locally verify the user and get a credential
-// 5. Assert the credential on the server
+// 2. Obtain the challenge and other options from server
+// 3. Locally verify the user and get a credential
+// 4. Verify the credential on the server
