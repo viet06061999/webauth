@@ -39,7 +39,7 @@ export const _fetch = async (path, payload = '') => {
 };
 
 // TODO (1): Register a credential using a fingerprint
-// 1. Create `registerCredential() function
+// 1. Create `registerCredential()` function
 // 2. Obtain the challenge and other options from server endpoint: `/auth/registerRequest`
 // 3. Create a credential
 // 4. Register the credential to the server endpoint: `/auth/registerResponse`
@@ -51,4 +51,4 @@ export const _fetch = async (path, payload = '') => {
 // 1. Create `authetnicate()` function
 // 2. Obtain the challenge and other options from server
 // 3. Locally verify the user and get a credential
-// 4. Verify the credential on the server
+// 4. Verify the credential: `/auth/signinResponse`

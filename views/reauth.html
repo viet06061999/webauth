@@ -35,6 +35,8 @@
     </mwc-top-app-bar-fixed>
     <main class="content">
       <!--
+        TODO(4): Enable reauth experience
+        1. Build UI
       -->
       <form id="form" method="POST" action="/auth/password">
         <h2>
@@ -68,8 +70,7 @@
       });
 
       // TODO(4): Enable reauth experience
-      // 1. Build UI
-      // 2. Is User Verifying Platform Authenticator available?
+      // 2. Feature detection and UVPA availability
       // 3. Fallback to password form
       // 4. Invoke the biometric authentication
     </script>
