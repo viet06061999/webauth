@@ -16,7 +16,7 @@
  */
 export const _fetch = async (path, payload = '') => {
   const headers = {
-    'X-Requested-With': 'XMLHttpRequest'
+    'X-Requested-With': 'XMLHttpRequest',
   };
   if (payload && !(payload instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
@@ -26,7 +26,7 @@ export const _fetch = async (path, payload = '') => {
     method: 'POST',
     credentials: 'same-origin',
     headers: headers,
-    body: payload
+    body: payload,
   });
   if (res.status === 200) {
     // Server authentication succeeded

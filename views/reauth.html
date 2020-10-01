@@ -24,21 +24,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- import the webpage's stylesheet -->
-    <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+    <link rel="stylesheet" href="/bundle.css">
+    <link rel="stylesheet" href="https://unpkg.com/material-components-web@7.0.0/dist/material-components-web.min.css">
     <script src="https://cdn.jsdelivr.net/gh/herrjemand/Base64URL-ArrayBuffer@latest/lib/base64url-arraybuffer.js"></script>
+    <script src="components-bundle.js"></script>
   </head>
   <body class="mdc-typography">
-    <header class="mdc-top-app-bar" style="top:0px">
-      <h1 class="mdc-top-app-bar__title">
-        WebAuthn codelab
-      </h1>
-    </header>
-    <main class="content mdc-top-app-bar--fixed-adjust">
-      <h2>
-        Enter a password
-      </h2>
-      <form id="form" method="POST" action="/auth/password" >
+    <mwc-top-app-bar-fixed>
+      <span slot="title">WebAuthn codelab</span>
+    </mwc-top-app-bar-fixed>
+    <main class="content">
+      <!--
+      -->
+      <form id="form" method="POST" action="/auth/password">
+        <h2>
+          Enter a password
+        </h2>
         <input type="hidden" name="username" value="{{username}}" />
         <div class="mdc-text-field mdc-text-field--filled">
           <span class="mdc-text-field__ripple"></span>
@@ -49,7 +50,7 @@
         <input type="submit" class="mdc-button mdc-button--raised" value="Sign-In" />
       </form>
     </main>
-    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <script src="https://unpkg.com/material-components-web@7.0.0/dist/material-components-web.min.js"></script>
     <script type="module">
       new mdc.textField.MDCTextField(document.querySelector('.mdc-text-field'));
       import { _fetch } from '/client.js';
@@ -63,7 +64,7 @@
         .then(user => {
           location.href = '/home';
         })
-        .catch(e => alert(e.message || e));
+        .catch(e => alert(e));
       });
 
       // TODO(4): Enable reauth experience
