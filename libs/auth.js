@@ -65,6 +65,20 @@ const sessionCheck = (req, res, next) => {
   next();
 };
 
+const getOrigin = (userAgent) => {
+  let origin = '';
+  if (userAgent.indexOf('okhttp') === 0) {
+    const octArray = process.env.ANDROID_SHA256HASH.split(':').map((h) =>
+      parseInt(h, 16),
+    );
+    const androidHash = base64url.encode(octArray);
+    origin = `android:apk-key-hash:${androidHash}`;
+  } else {
+    origin = process.env.ORIGIN;
+  }
+  return origin;
+}
+
 /**
  * Check username, create a new account if it doesn't exist.
  * Set a `username` cookie.
@@ -270,6 +284,12 @@ router.post('/registerRequest', csrfCheck, sessionCheck, async (req, res) => {
 
     res.cookie('challenge', options.challenge, sameSite);
 
+    // Temporary hack until SimpleWebAuthn supports `pubKeyCredParams`
+    options.pubKeyCredParams = [];
+    for (let param of params) {
+      options.pubKeyCredParams.push({ type: 'public-key', alg: param });
+    }
+
     res.json(options);
   } catch (e) {
     res.status(400).send({ error: e });
@@ -294,7 +314,7 @@ router.post('/registerRequest', csrfCheck, sessionCheck, async (req, res) => {
 router.post('/registerResponse', csrfCheck, sessionCheck, async (req, res) => {
   const username = req.cookies.username;
   const expectedChallenge = req.cookies.challenge;
-  const expectedOrigin = process.env.ORIGIN;
+  const expectedOrigin = getOrigin(req.get('User-Agent'));
   const expectedRPID = process.env.HOSTNAME;
   const credId = req.body.id;
   const type = req.body.type;
@@ -302,22 +322,11 @@ router.post('/registerResponse', csrfCheck, sessionCheck, async (req, res) => {
   try {
     const { body } = req;
 
-    let origin = '';
-    if (req.get('User-Agent').indexOf('okhttp') > -1) {
-      const octArray = process.env.ANDROID_SHA256HASH.split(':').map((h) =>
-        parseInt(h, 16),
-      );
-      const androidHash = base64url.encode(octArray);
-      origin = `android:apk-key-hash:${androidHash}`; // TODO: Generate
-    } else {
-      origin = process.env.ORIGIN;
-    }
-
     const verification = await fido2.verifyAttestationResponse({
       credential: body,
       expectedChallenge,
-      expectedOrigin: origin,
-      expectedRPID: process.env.HOSTNAME,
+      expectedOrigin,
+      expectedRPID,
     });
 
     const { verified, authenticatorInfo } = verification;
@@ -412,6 +421,9 @@ router.post('/signinRequest', csrfCheck, async (req, res) => {
     });
     res.cookie('challenge', options.challenge, sameSite);
 
+    // Temporary hack until SimpleWebAuthn supports `rpID`
+    options.rpId = process.env.HOSTNAME;
+
     res.json(options);
   } catch (e) {
     res.status(400).json({ error: e });
@@ -436,10 +448,13 @@ router.post('/signinRequest', csrfCheck, async (req, res) => {
 router.post('/signinResponse', csrfCheck, async (req, res) => {
   const { body } = req;
   const expectedChallenge = req.cookies.challenge;
+  const expectedOrigin = getOrigin(req.get('User-Agent'));
+  const expectedRPID = process.env.HOSTNAME;
+
   // Query the user
   const user = db.get('users').find({ username: req.cookies.username }).value();
 
-  let credential = user.credentials.find((cred) => cred.credId === body.id);
+  let credential = user.credentials.find((cred) => cred.credId === req.body.id);
 
   try {
     if (!credential) {
@@ -449,8 +464,8 @@ router.post('/signinResponse', csrfCheck, async (req, res) => {
     const verification = fido2.verifyAssertionResponse({
       credential: body,
       expectedChallenge,
-      expectedOrigin: process.env.ORIGIN,
-      expectedRPID: process.env.HOSTNAME,
+      expectedOrigin,
+      expectedRPID,
       authenticator: credential,
     });
 
