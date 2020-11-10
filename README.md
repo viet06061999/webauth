@@ -1,6 +1,7 @@
 # WebAuthn / FIDO2 API Codelab
 
 This folder contains the source code for the WebAuthn / FIDO2 API codelab. It gives an introduction into implementing FIDO2 API,
+- https://codelabs.developers.google.com/codelabs/webauthn-reauth/
 - https://codelabs.developers.google.com/codelabs/fido2-for-android/
 
 ### License
