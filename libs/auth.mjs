@@ -14,30 +14,58 @@
  * See the License for the specific language governing permissions and
  * limitations under the License
  */
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const crypto = require('crypto');
-const fido2 = require('@simplewebauthn/server');
-const base64url = require('base64url');
-const fs = require('fs');
-const low = require('lowdb');
+import crypto from 'crypto';
+import {
+  generateRegistrationOptions,
+  verifyRegistrationResponse,
+  generateAuthenticationOptions,
+  verifyAuthenticationResponse
+} from '@simplewebauthn/server';
+import { isoBase64URL } from '@simplewebauthn/server/helpers';
 
-if (!fs.existsSync('./.data')) {
-  fs.mkdirSync('./.data');
-}
+import { Low } from 'lowdb';
+import { JSONFile } from 'lowdb/node'
 
-const FileSync = require('lowdb/adapters/FileSync');
-const adapter = new FileSync('.data/db.json');
-const db = low(adapter);
+const adapter = new JSONFile('.data/db.json');
+const db = new Low(adapter);
+await db.read();
+
+db.data ||= { users: [], credentials: [] } ;
 
 router.use(express.json());
 
 const RP_NAME = 'WebAuthn Codelab';
 const TIMEOUT = 30 * 1000 * 60;
 
-db.defaults({
-  users: [],
-}).write();
+const Users = {
+  findById: (user_id) => {
+    const user = db.data.users.find(user => user.id === user_id);
+    return user;
+  },
+
+  findByUsername: (username) => {
+    const user = db.data.users.find(user => user.username === username);
+    return user;
+  },
+
+  update: async (user) => {
+    let found = false;
+    db.data.users = db.data.users.map(_user => {
+      if (_user.id === user.id) {
+        found = true;
+        return user;
+      } else {
+        return _user;
+      }
+    });
+    if (!found) {
+      db.data.users.push(user);
+    }
+    return db.write();
+  }
+}
 
 const csrfCheck = (req, res, next) => {
   if (req.header('X-Requested-With') != 'XMLHttpRequest') {
@@ -76,7 +104,7 @@ const getOrigin = (userAgent) => {
           const octArray = hashes[i].split(':').map((h) =>
             parseInt(h, 16),
           );
-          const androidHash = base64url.encode(octArray);
+          const androidHash = isoBase64URL.fromBuffer(octArray);
           origin = `android:apk-key-hash:${androidHash}`;
           break;
         }
@@ -95,24 +123,23 @@ router.post('/username', (req, res) => {
   const username = req.body.username;
   // Only check username, no need to check password as this is a mock
   if (!username || !/[a-zA-Z0-9-_]+/.test(username)) {
-    res.status(400).send({ error: 'Bad request' });
-    return;
+    return res.status(400).send({ error: 'Bad request' });
   } else {
     // See if account already exists
-    let user = db.get('users').find({ username: username }).value();
+    let user = Users.findByUsername(username);
     // If user entry is not created yet, create one
     if (!user) {
       user = {
         username: username,
-        id: base64url.encode(crypto.randomBytes(32)),
+        id: isoBase64URL.fromBuffer(crypto.randomBytes(32)),
         credentials: [],
       };
-      db.get('users').push(user).write();
+      Users.update(user);
     }
     // Set username in the session
     req.session.username = username;
     // If sign-in succeeded, redirect to `/home`.
-    res.json(user);
+    return res.json(user);
   }
 });
 
@@ -123,25 +150,23 @@ router.post('/username', (req, res) => {
  **/
 router.post('/password', (req, res) => {
   if (!req.body.password) {
-    res.status(401).json({ error: 'Enter at least one random letter.' });
-    return;
+    return res.status(401).json({ error: 'Enter at least one random letter.' });
   }
-  const user = db.get('users').find({ username: req.session.username }).value();
+  const user = Users.findByUsername(req.session.username);
 
   if (!user) {
-    res.status(401).json({ error: 'Enter username first.' });
-    return;
+    return res.status(401).json({ error: 'Enter username first.' });
   }
 
   req.session['signed-in'] = 'yes';
-  res.json(user);
+  return res.json(user);
 });
 
 router.get('/signout', (req, res) => {
   // Remove the session
   req.session.destroy()
   // Redirect to `/`
-  res.redirect(307, '/');
+  return res.redirect(307, '/');
 });
 
 /**
@@ -164,8 +189,8 @@ router.get('/signout', (req, res) => {
  ```
  **/
 router.post('/getKeys', csrfCheck, sessionCheck, (req, res) => {
-  const user = db.get('users').find({ username: req.session.username }).value();
-  res.json(user || {});
+  const user = Users.findByUsername(req.session.username);
+  return res.json(user || {});
 });
 
 /**
@@ -175,25 +200,17 @@ router.post('/getKeys', csrfCheck, sessionCheck, (req, res) => {
 router.post('/removeKey', csrfCheck, sessionCheck, (req, res) => {
   const credId = req.query.credId;
   const username = req.session.username;
-  const user = db.get('users').find({ username: username }).value();
+  const user = Users.findByUsername(username);
 
   const newCreds = user.credentials.filter((cred) => {
     // Leave credential ids that do not match
     return cred.credId !== credId;
   });
 
-  db.get('users')
-    .find({ username: username })
-    .assign({ credentials: newCreds })
-    .write();
+  user.credentials = newCreds;
+  Users.update(user);
 
-  res.json({});
-});
-
-router.get('/resetDB', (req, res) => {
-  db.set('users', []).write();
-  const users = db.get('users').value();
-  res.json(users);
+  return res.json({});
 });
 
 /**
@@ -230,13 +247,13 @@ router.get('/resetDB', (req, res) => {
  **/
 router.post('/registerRequest', csrfCheck, sessionCheck, async (req, res) => {
   const username = req.session.username;
-  const user = db.get('users').find({ username: username }).value();
+  const user = Users.findByUsername(username);
   try {
     const excludeCredentials = [];
     if (user.credentials.length > 0) {
       for (let cred of user.credentials) {
         excludeCredentials.push({
-          id: base64url.toBuffer(cred.credId),
+          id: isoBase64URL.toBuffer(cred.credId),
           type: 'public-key',
           transports: ['internal'],
         });
@@ -276,7 +293,7 @@ router.post('/registerRequest', csrfCheck, sessionCheck, async (req, res) => {
       attestation = cp;
     }
 
-    const options = fido2.generateRegistrationOptions({
+    const options = await generateRegistrationOptions({
       rpName: RP_NAME,
       rpID: process.env.HOSTNAME,
       userID: user.id,
@@ -297,9 +314,9 @@ router.post('/registerRequest', csrfCheck, sessionCheck, async (req, res) => {
       options.pubKeyCredParams.push({ type: 'public-key', alg: param });
     }
 
-    res.json(options);
+    return res.json(options);
   } catch (e) {
-    res.status(400).send({ error: e });
+    return res.status(400).send({ error: e });
   }
 });
 
@@ -329,8 +346,8 @@ router.post('/registerResponse', csrfCheck, sessionCheck, async (req, res) => {
   try {
     const { body } = req;
 
-    const verification = await fido2.verifyRegistrationResponse({
-      credential: body,
+    const verification = await verifyRegistrationResponse({
+      response: body,
       expectedChallenge,
       expectedOrigin,
       expectedRPID,
@@ -339,14 +356,14 @@ router.post('/registerResponse', csrfCheck, sessionCheck, async (req, res) => {
     const { verified, registrationInfo } = verification;
 
     if (!verified) {
-      throw 'User verification failed.';
+      throw new Error('User verification failed.');
     }
 
     const { credentialPublicKey, credentialID, counter } = registrationInfo;
-    const base64PublicKey = base64url.encode(credentialPublicKey);
-    const base64CredentialID = base64url.encode(credentialID);
+    const base64PublicKey = isoBase64URL.fromBuffer(credentialPublicKey);
+    const base64CredentialID = isoBase64URL.fromBuffer(credentialID);
 
-    const user = db.get('users').find({ username: username }).value();
+    const user = Users.findByUsername(username);
 
     const existingCred = user.credentials.find(
       (cred) => cred.credID === base64CredentialID,
@@ -363,15 +380,16 @@ router.post('/registerResponse', csrfCheck, sessionCheck, async (req, res) => {
       });
     }
 
-    db.get('users').find({ username: username }).assign(user).write();
+    Users.update(user);
 
     delete req.session.challenge;
 
     // Respond with user info
-    res.json(user);
+    return res.json(user);
   } catch (e) {
+    console.error(e);
     delete req.session.challenge;
-    res.status(400).send({ error: e.message });
+    return res.status(400).send({ error: e.message });
   }
 });
 
@@ -391,10 +409,7 @@ router.post('/registerResponse', csrfCheck, sessionCheck, async (req, res) => {
  **/
 router.post('/signinRequest', csrfCheck, async (req, res) => {
   try {
-    const user = db
-      .get('users')
-      .find({ username: req.session.username })
-      .value();
+    const user = Users.findByUsername(req.session.username);
 
     if (!user) {
       // Send empty response if user is not registered yet.
@@ -411,14 +426,14 @@ router.post('/signinRequest', csrfCheck, async (req, res) => {
       // `credId` is specified and matches
       if (credId && cred.credId == credId) {
         allowCredentials.push({
-          id: base64url.toBuffer(cred.credId),
+          id: isoBase64URL.toBuffer(cred.credId),
           type: 'public-key',
           transports: ['internal']
         });
       }
     }
 
-    const options = fido2.generateAuthenticationOptions({
+    const options = await generateAuthenticationOptions({
       timeout: TIMEOUT,
       rpID: process.env.HOSTNAME,
       allowCredentials,
@@ -430,9 +445,9 @@ router.post('/signinRequest', csrfCheck, async (req, res) => {
     });
     req.session.challenge = options.challenge;
 
-    res.json(options);
+    return res.json(options);
   } catch (e) {
-    res.status(400).json({ error: e });
+    return res.status(400).json({ error: e });
   }
 });
 
@@ -457,45 +472,46 @@ router.post('/signinResponse', csrfCheck, async (req, res) => {
   const expectedOrigin = getOrigin(req.get('User-Agent'));
   const expectedRPID = process.env.HOSTNAME;
 
-  // Query the user
-  const user = db.get('users').find({ username: req.session.username }).value();
-
-  let credential = user.credentials.find((cred) => cred.credId === req.body.id);
-  
-  credential.credentialPublicKey = base64url.toBuffer(credential.publicKey);
-  credential.credentialID = base64url.toBuffer(credential.credId);
-  credential.counter = credential.prevCounter;
-
   try {
+    // Query the user
+    const user = Users.findByUsername(req.session.username);
+
+    let credential = user.credentials.find((cred) => cred.credId === req.body.id);
     if (!credential) {
-      throw 'Authenticating credential not found.';
+      throw new Error('Authenticating credential not found.');
     }
 
-    const verification = fido2.verifyAuthenticationResponse({
-      credential: body,
+    const authenticator = {};
+    authenticator.credentialPublicKey = isoBase64URL.toBuffer(credential.publicKey);
+    authenticator.credentialID = isoBase64URL.toBuffer(credential.credId);
+    authenticator.counter = credential.prevCounter;
+
+    const verification = await verifyAuthenticationResponse({
+      response: body,
       expectedChallenge,
       expectedOrigin,
       expectedRPID,
-      authenticator: credential,
+      authenticator,
     });
 
     const { verified, authenticationInfo } = verification;
 
     if (!verified) {
-      throw 'User verification failed.';
+      throw new Error('User verification failed.');
     }
 
-    credential.prevCounter = authenticationInfo.newCounter;
-
-    db.get('users').find({ username: req.session.username }).assign(user).write();
+    Users.update(user);
 
     delete req.session.challenge;
     req.session['signed-in'] = 'yes';
-    res.json(user);
+
+    return res.json(user);
   } catch (e) {
+    console.error(e);
     delete req.session.challenge;
-    res.status(400).json({ error: e });
+
+    return res.status(400).json({ error: e.message });
   }
 });
 
-module.exports = router;
+export { router as auth };
