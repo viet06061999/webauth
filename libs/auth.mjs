@@ -32,7 +32,7 @@ const adapter = new JSONFile('.data/db.json');
 const db = new Low(adapter);
 await db.read();
 
-db.data ||= { users: [], credentials: [] } ;
+db.data ||= { users: [], credentials: [] };
 
 router.use(express.json());
 
@@ -89,7 +89,7 @@ const sessionCheck = (req, res, next) => {
 
 const getOrigin = (userAgent) => {
   let origin = process.env.ORIGIN;
-  
+
   const appRe = /^[a-zA-z0-9_.]+/;
   const match = userAgent.match(appRe);
   if (match) {
@@ -111,7 +111,7 @@ const getOrigin = (userAgent) => {
       }
     }
   }
-  
+
   return origin;
 }
 
@@ -138,6 +138,7 @@ router.post('/username', (req, res) => {
     }
     // Set username in the session
     req.session.username = username;
+    console.log(req.session);
     // If sign-in succeeded, redirect to `/home`.
     return res.json(user);
   }
@@ -255,7 +256,14 @@ router.post('/registerRequest', csrfCheck, sessionCheck, async (req, res) => {
         excludeCredentials.push({
           id: isoBase64URL.toBuffer(cred.credId),
           type: 'public-key',
-          transports: ['internal'],
+          transports: [
+            "usb",
+            "nfc",
+            "ble",
+            "smart-card",
+            "internal",
+            "hybrid",
+          ],
         });
       }
     }
@@ -292,7 +300,7 @@ router.post('/registerRequest', csrfCheck, sessionCheck, async (req, res) => {
     if (cp && (cp == 'none' || cp == 'indirect' || cp == 'direct')) {
       attestation = cp;
     }
-
+    console.log(process.env.HOSTNAME);
     const options = await generateRegistrationOptions({
       rpName: RP_NAME,
       rpID: process.env.HOSTNAME,
@@ -428,7 +436,14 @@ router.post('/signinRequest', csrfCheck, async (req, res) => {
         allowCredentials.push({
           id: isoBase64URL.toBuffer(cred.credId),
           type: 'public-key',
-          transports: ['internal']
+          transports: [
+            "usb",
+            "nfc",
+            "ble",
+            "smart-card",
+            "hybrid",
+            "internal"
+          ],
         });
       }
     }

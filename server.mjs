@@ -20,6 +20,8 @@ import express from "express";
 import session from "express-session";
 import hbs from "hbs";
 import { auth } from "./libs/auth.mjs";
+import bodyParser from 'body-parser';
+
 const app = express();
 
 app.set("view engine", "html");
@@ -28,28 +30,24 @@ app.set("views", "./views");
 app.use(express.json());
 app.use(express.static("public"));
 app.use(express.static("dist"));
-app.use(
-  session({
-    secret: "secret", // You should specify a real secret here
-    resave: true,
-    saveUninitialized: false,
-    proxy: true,
-    cookie: {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-    },
-  })
-);
+
+// Sử dụng middleware body-parser
+app.use(bodyParser.urlencoded({ extended: true }));
+// Cấu hình session middleware
+app.use(session({
+  secret: '12343253124',
+  resave: false,
+  saveUninitialized: false,
+}));
 
 app.use((req, res, next) => {
   if (process.env.PROJECT_DOMAIN) {
     process.env.HOSTNAME = `${process.env.PROJECT_DOMAIN}.glitch.me`;
   } else {
-    process.env.HOSTNAME = req.headers.host;
+    process.env.HOSTNAME = 'localhost';
   }
   const protocol = /^localhost/.test(process.env.HOSTNAME) ? "http" : "https";
-  process.env.ORIGIN = `${protocol}://${process.env.HOSTNAME}`;
+  process.env.ORIGIN = `${protocol}://${process.env.HOSTNAME}:8080`;
   if (
     req.get("x-forwarded-proto") &&
     req.get("x-forwarded-proto").split(",")[0] !== "https"
@@ -62,6 +60,8 @@ app.use((req, res, next) => {
 
 // http://expressjs.com/en/starter/basic-routing.html
 app.get("/", (req, res) => {
+  console.log(req.session)
+
   // Check session
   if (req.session.username) {
     // If user is signed in, redirect to `/reauth`.
@@ -84,6 +84,7 @@ app.get("/home", (req, res) => {
 
 app.get("/reauth", (req, res) => {
   const username = req.session.username;
+  console.log(req.session)
   if (!username) {
     res.redirect(302, "/");
     return;

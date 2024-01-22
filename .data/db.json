@@ -1,0 +1,91 @@
+{
+  "users": [
+    {
+      "username": "vietnb",
+      "id": "Kq3rwGYBqW-J5HPLfZsK3XZ-4VpS5ov1Kh8Ck8UD5pQ",
+      "credentials": [
+        {
+          "publicKey": "pQECAyYgASFYIPl-cyHYFiGDNJJOFHf9uf64AAZjFf4lBv60-2mczSgmIlgg81yH1QUT6jXARUpKQDHCkE5_Bdp__2OrZmSsZBPppIs",
+          "credId": "ry3nw7810BgdL2Q5fz2Ecb6oCKPv3PcOnJ48TEGx4ho",
+          "prevCounter": 0
+        }
+      ]
+    },
+    {
+      "username": "vietnb22",
+      "id": "vjV6rL4rTlmhf95xEoCSKKuTChUZO3FATNAXtxDyvMw",
+      "credentials": []
+    },
+    {
+      "username": "vietnba",
+      "id": "5DRXHEMqHkVbNUR4Ik7MEVOND13OcVoyuqI7k72qR2c",
+      "credentials": []
+    },
+    {
+      "username": "vndaf",
+      "id": "WuOK0uPDRGyqqvag9J_KNulmjQu-_hT6WefDnwccHCw",
+      "credentials": []
+    },
+    {
+      "username": "vietnb99",
+      "id": "5pa7rCBtsZqUTYYqsd39McsLaQfCZHiQ7VwlPtzDcHs",
+      "credentials": []
+    },
+    {
+      "username": "vietlk",
+      "id": "U11YQMhN24ZMR0H3OfwoPVwuLCiLD2SbxQRIBqVbrwc",
+      "credentials": [
+        {
+          "publicKey": "pQECAyYgASFYIAn3sYZUXdaPfTpa-fZO4aMMmaKWSVFUwPnigFrNT7TCIlggUxeGe2XrJGGTnXviyA7OP1xYYol7kc3FxQj2etLBgd4",
+          "credId": "AWPITpJxBvaxhacyTwtZUn-BKk3dNquVRPNSbvtTCUMHHOy3X_30RXVukPI7vvPsb_Iwm2_pfv-D2x1dpURMZ7w",
+          "prevCounter": 0
+        }
+      ]
+    },
+    {
+      "username": "qweb",
+      "id": "dzjJILoAEwe5m-DeuS16-KKAeRE5Q9FdUOMXuEJLSNg",
+      "credentials": [
+        {
+          "publicKey": "pQECAyYgASFYIIME_IwD_BvDj4zUmK9H6182keJ-lCHYaN6MACUVukawIlggKchB6c4sC4wfple7rKA2WV1_geHAKyMK94VtCPQlDqY",
+          "credId": "AYupKYNLs35IisvEYgP0hlABxVoPU9--wzMcCR4q73aYHAilCdDGOdEwRtJ6GvcyZKNJOEdYtw13kfAiLUH-tGU",
+          "prevCounter": 0
+        }
+      ]
+    },
+    {
+      "username": "vietbnvc",
+      "id": "QftRDPGOO1DSpl7PwGzj0QWJKcRqvGzXPM4qUzF9_Wo",
+      "credentials": [
+        {
+          "publicKey": "pQECAyYgASFYIKDjNIlLMs9T1iKfnI8pnVwyl9WwvpMN4pL06V-NNwZkIlggGtaHsitJFCWdbRQI_7djcWiD0Z2ZIT_7XbiQq0XOWo4",
+          "credId": "ATkoABEF83o6vSm5l9bK4pDshPRapjIC8-Yy1dOntmqfkhhJWs373YF3ILGxb3ISJQwnG0nKbv3ZuzgZWlX8qRw",
+          "prevCounter": 0
+        }
+      ]
+    },
+    {
+      "username": "sondh",
+      "id": "PZ6tqi7Qv7d7TxTQj_XMkJKjij6fSPtpuIAgc5-lR78",
+      "credentials": [
+        {
+          "publicKey": "pQECAyYgASFYIMh-5USJBhogTrZcXitp82BAvwL60FYe_kA00nyOKxTjIlggqGaHlWYDlUCkHN-USlXgm_Ohyk-DZ-kId1iME-LQgWc",
+          "credId": "AStxUOXOwNJxyVAEODfYXYKw__4Dty4yLjCblL0FEevXvILBoDpPcpycpMuXnTNnULPIbFrdAV8kjrO5V3xxACc",
+          "prevCounter": 0
+        }
+      ]
+    },
+    {
+      "username": "viet99",
+      "id": "bKiF0lR2NJzyRobLBiqXEY7XgbjBqlZjJ-HNaac21zc",
+      "credentials": [
+        {
+          "publicKey": "pQECAyYgASFYIL51M8lJG9x2pacW5lPEZ0JGteyInbDImqWwUtus0QoTIlgg6T9w_USDvvoSYs37vFwEBY5g-hS49iDz4o79hZ36-K0",
+          "credId": "9VcoqFwBtRLD2tj1NEyxY1L4MtjngdSqNh1cu8aZxR4",
+          "prevCounter": 0
+        }
+      ]
+    }
+  ],
+  "credentials": []
+}

@@ -32,11 +32,18 @@
       <span slot="title">WebAuthn codelab</span>
     </mwc-top-app-bar-fixed>
     <main class="content">
-      <!--
-        TODO(4): Enable reauth experience
-        1. Build UI
-      -->
-      <form id="form" method="POST" action="/auth/password"><!-- TODO(4) - 1. -->
+      <div id="uvpa_available" class="hidden">
+        <h2>
+          Verify your identity
+        </h2>
+        <div>
+          <mwc-button id="reauth" raised>Authenticate</mwc-button>
+        </div>
+        <div>
+          <mwc-button id="cancel">Sign-in with password</mwc-button>
+        </div>
+      </div>
+      <form id="form" method="POST" action="/auth/password" class="hidden">
         <h2>
           Enter a password
         </h2>
@@ -54,7 +61,7 @@
     <script src="https://unpkg.com/material-components-web@7.0.0/dist/material-components-web.min.js"></script>
     <script type="module">
       new mdc.textField.MDCTextField(document.querySelector('.mdc-text-field'));
-      import { _fetch } from '/client.js'; // TODO(4) - 4
+      import { _fetch, authenticate } from '/client.js';
       const form = document.querySelector('#form');
       form.addEventListener('submit', e => {
         e.preventDefault();
@@ -68,10 +75,44 @@
         .catch(e => alert(e));
       });
 
-      // TODO(4): Enable reauth experience
-      // 2. Feature detection and UVPA availability
-      // 3. Fallback to password form
-      // 4. Invoke the biometric authentication
+      if (window.PublicKeyCredential) {
+        PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+        .then(uvpaa => {
+          if (uvpaa && localStorage.getItem(`credId`)) {
+            document
+              .querySelector('#uvpa_available')
+              .classList.remove('hidden');
+          } else {
+            form.classList.remove('hidden');
+          }
+        });        
+      } else {
+        form.classList.remove('hidden');
+      }
+
+      const cancel = document.querySelector('#cancel');
+      cancel.addEventListener('click', e => {
+        form.classList.remove('hidden');
+        document
+          .querySelector('#uvpa_available')
+          .classList.add('hidden');
+      });
+
+      const button = document.querySelector('#reauth');
+      button.addEventListener('click', e => {
+        authenticate().then(user => {
+          if (user) {
+            location.href = '/home';
+          } else {
+            throw 'User not found.';
+          }
+        }).catch(e => {
+          console.error(e.message || e);
+          alert('Authentication failed. Use password to sign-in.');
+          form.classList.remove('hidden');
+          document.querySelector('#uvpa_available').classList.add('hidden');
+        });        
+      });
     </script>
   </body>
 </html>
