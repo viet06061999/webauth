@@ -1,0 +1,16 @@
+version: '3'
+services:
+  keycloak:
+    image: jboss/keycloak
+    ports:
+      - 8080:8080
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=admin
+
+  keycloak-cli:
+    image: jboss/keycloak
+    depends_on:
+      - keycloak
+    entrypoint: ["/opt/jboss/keycloak/bin/kcadm.sh"]
+    command: ["config", "credentials", "--server", "http://keycloak:8080/auth", "--realm", "master", "--user", "admin", "--password", "admin"]

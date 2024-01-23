@@ -44,10 +44,10 @@ app.use((req, res, next) => {
   if (process.env.PROJECT_DOMAIN) {
     process.env.HOSTNAME = `${process.env.PROJECT_DOMAIN}.glitch.me`;
   } else {
-    process.env.HOSTNAME = 'localhost';
+    process.env.HOSTNAME = 'ec2-13-215-184-119.ap-southeast-1.compute.amazonaws.com';
   }
   const protocol = /^localhost/.test(process.env.HOSTNAME) ? "http" : "https";
-  process.env.ORIGIN = `${protocol}://${process.env.HOSTNAME}:8080`;
+  process.env.ORIGIN = `${protocol}://${process.env.HOSTNAME}:8088`;
   if (
     req.get("x-forwarded-proto") &&
     req.get("x-forwarded-proto").split(",")[0] !== "https"
@@ -124,7 +124,7 @@ app.get("/.well-known/assetlinks.json", (req, res) => {
 app.use("/auth", auth);
 
 // listen for req :)
-const port = process.env.GLITCH_DEBUGGER ? null : 8080;
+const port = process.env.GLITCH_DEBUGGER ? null : 8088;
 const listener = app.listen(port || process.env.PORT, () => {
   console.log("Your app is listening on port " + listener.address().port);
 });

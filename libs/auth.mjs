@@ -308,10 +308,10 @@ router.post('/registerRequest', csrfCheck, sessionCheck, async (req, res) => {
       userName: user.username,
       timeout: TIMEOUT,
       // Prompt users for additional information about the authenticator.
-      attestationType: attestation,
+      // attestationType: attestation,
       // Prevent users from re-registering existing authenticators
       excludeCredentials,
-      authenticatorSelection,
+      // authenticatorSelection,
     });
 
     req.session.challenge = options.challenge;
@@ -432,7 +432,7 @@ router.post('/signinRequest', csrfCheck, async (req, res) => {
     const allowCredentials = [];
     for (let cred of user.credentials) {
       // `credId` is specified and matches
-      if (credId && cred.credId == credId) {
+      // if (credId && cred.credId == credId) {
         allowCredentials.push({
           id: isoBase64URL.toBuffer(cred.credId),
           type: 'public-key',
@@ -445,7 +445,7 @@ router.post('/signinRequest', csrfCheck, async (req, res) => {
             "internal"
           ],
         });
-      }
+      // }
     }
 
     const options = await generateAuthenticationOptions({
